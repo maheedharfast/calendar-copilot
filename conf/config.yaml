@@ -1,0 +1,11 @@
+openai:
+  gemini_api_key: ${oc.env:GEMINI_API_KEY}
+
+
+google_oauth:
+  client_id: ${oc.env:GOOGLE_OAUTH_CLIENT_ID}
+  client_secret: ${oc.env:GOOGLE_OAUTH_CLIENT_SECRET}
+
+jwt_auth:
+  super_secret_key: ${oc.env:JWT_SUPER_SECRET}
+  refresh_secret_key: ${oc.env:JWT_REFRESH_SECRET}

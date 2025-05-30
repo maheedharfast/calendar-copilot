@@ -1,0 +1,24 @@
+[project]
+name = "calendar-copilot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "bcrypt>=4.3.0",
+    "dependency-injector>=4.47.0",
+    "fastapi>=0.115.12",
+    "google-api-python-client>=2.170.0",
+    "greenlet>=3.2.2",
+    "jose>=1.0.0",
+    "loguru>=0.7.3",
+    "omegaconf>=2.3.0",
+    "openai>=1.82.0",
+    "passlib>=1.7.4",
+    "pydantic>=2.11.5",
+    "pydantic-ai>=0.2.12",
+    "pydantic-settings>=2.9.1",
+    "pyjwt>=2.10.1",
+    "pytz>=2025.2",
+    "uvicorn>=0.34.2",
+]
