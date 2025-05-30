@@ -12,20 +12,12 @@ class GoogleOAuthToken(BaseModel):
         description="Type of token, typically 'Bearer'",
         pattern="^Bearer$",  # Ensures token_type is exactly "Bearer"
     )
-    expiry_date: int = Field(
-        description="Token expiration timestamp in milliseconds since epoch"
-    )
 
     @property
     def scopes(self) -> list[str]:
         """Returns the scope string split into a list of individual scopes"""
         return self.scope.split()
 
-    @property
-    def is_expired(self) -> bool:
-        """Checks if the token is expired using millisecond precision"""
-        current_time_ms = int(datetime.now().timestamp() * 1000)
-        return current_time_ms > self.expiry_date
 
 class TimeSlot(BaseModel):
     """Available time slot schema"""

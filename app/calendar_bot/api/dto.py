@@ -6,11 +6,10 @@ class CalendarDTO(BaseModel):
     """DTO for calendar data"""
     id: str = Field(..., description="Unique identifier for the calendar")
     provider: str = Field(..., description="Calendar provider (e.g., GOOGLE, OUTLOOK)")
-    name: str = Field(..., description="Name of the calendar")
 
 class CalendarCreateDTO(BaseModel):
     provider: str = Field(..., description="Calendar provider (e.g., GOOGLE, OUTLOOK)")
-    name: str = Field(..., description="Name of the calendar")
+    credentials: dict = Field(..., description="credentials")
 
 class ChatMessageDTO(BaseModel):
     """DTO for chat messages"""
@@ -18,6 +17,9 @@ class ChatMessageDTO(BaseModel):
     conversation_id: str = Field(..., description="ID of the conversation this message belongs to")
     content: str = Field(..., description="Content of the message")
     role: str = Field(..., description="Role of the message sender (user/assistant)")
+
+class MessageDTO(BaseModel):
+    content: str = Field(..., description="Content of the message")
 
 class ConversationDTO(BaseModel):
     """DTO for conversations"""

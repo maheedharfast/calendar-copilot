@@ -4,15 +4,14 @@ from datetime import datetime, date
 from typing import Optional, Dict, Any
 
 class CalendarProvider(Enum):
-    GOOGLE = "google"
-    MICROSOFT = "microsoft"
+    GOOGLE = "GOOGLE"
+    MICROSOFT = "MICROSOFT"
 
 class Calendar(BaseModel):
     """Calendar entity schema"""
     id: str = Field(..., description="Unique identifier for the calendar")
     user_id: str = Field(..., description="ID of the user who owns the calendar")
     provider: CalendarProvider = Field(..., description="Calendar provider (e.g., GOOGLE, OUTLOOK)")
-    name: str = Field(..., description="Name of the calendar")
     credentials: dict = Field(..., description="Calendar credentials")
 
 class MessageRole(str, Enum):

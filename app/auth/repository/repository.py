@@ -44,7 +44,6 @@ class AuthRepository(IAuthRepository):
                 )
                 session.add(user_model)
                 session.add(user_auth_model)
-                await session.refresh(user_model) #
 
                 return User( #
                     id=user_model.id, #

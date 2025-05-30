@@ -5,18 +5,19 @@ from pkg.log.logger import Logger #
 from pkg.llm.client import LLMClient #
 from pkg.auth_token_client.client import TokenClient #
 # Import async_session_factory directly for repository injection
-from pkg.db_util.sql_lite_conn import get_db_session, async_session_factory #
-from integration_clients.g_suite.client import GSuiteClient #
-from app.calendar_bot.repository.repository import CalendarRepository #
-from app.calendar_bot.repository.chat_repository import ChatRepository #
-from app.calendar_bot.service.calendar_service import CalendarService #
-from app.calendar_bot.service.chat_service import ChatService #
-from app.calendar_bot.api.handler import CalendarBotHandler #
-from app.auth.api.handler import AuthHandler #
-from app.auth.service.auth_service import AuthService #
-from app.auth.repository.repository import AuthRepository # # This should point to your AuthRepository file
-from omegaconf import DictConfig, OmegaConf #
-from conf.config import AppConfig #
+from pkg.db_util.sql_lite_conn import get_db_session, async_session_factory
+from integration_clients.g_suite.client import GSuiteClient
+from app.calendar_bot.repository.repository import CalendarRepository
+from app.calendar_bot.repository.chat_repository import ChatRepository
+from app.calendar_bot.service.calendar_service import CalendarService
+from app.calendar_bot.service.calendar_agent import CalendarAgent
+from app.calendar_bot.service.chat_service import ChatService
+from app.calendar_bot.api.handler import CalendarBotHandler
+from app.auth.api.handler import AuthHandler
+from app.auth.service.auth_service import AuthService
+from app.auth.repository.repository import AuthRepository
+from omegaconf import DictConfig, OmegaConf
+from conf.config import AppConfig
 
 class Container(containers.DeclarativeContainer): #
     """Application container."""
@@ -46,7 +47,8 @@ class Container(containers.DeclarativeContainer): #
     # LLM Client
     llm_client = providers.Singleton( #
         LLMClient, #
-        api_key=config.openai.gemini_api_key #
+        gemini_api_key=config.openai.gemini_api_key,
+        logger=logger,
     )
 
     # G Suite Client
@@ -54,6 +56,7 @@ class Container(containers.DeclarativeContainer): #
         GSuiteClient, #
         client_id=config.google_oauth.client_id, #
         client_secret=config.google_oauth.client_secret, #
+        logger=logger
     )
 
     # Repositories
@@ -73,16 +76,16 @@ class Container(containers.DeclarativeContainer): #
     calendar_service = providers.Singleton( #
         CalendarService, #
         calendar_repository=calendar_repository, #
-        g_suite_client=g_suite_client, #
-        logger=logger #
     )
+    calendar_agent = providers.Singleton( CalendarAgent,logger)
 
     chat_service = providers.Singleton( #
         ChatService, #
-        llm_client=llm_client, #
-        logger=logger, #
-        chat_repository=chat_repository, #
-        g_suite_client=g_suite_client #
+        calendar_agent=calendar_agent, #
+        logger=logger,
+        chat_repository=chat_repository,
+        g_suite_client=g_suite_client,
+    calendar_service=calendar_service
     )
 
     # Handlers

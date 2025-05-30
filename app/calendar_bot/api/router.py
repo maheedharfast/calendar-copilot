@@ -5,7 +5,7 @@ from fastapi import APIRouter
 
 from app.calendar_bot.api.dependencies import CalendarBotHandlerDep
 from app.middleware import get_token_detail
-from app.calendar_bot.api.dto import CalendarCreateDTO, ChatMessageDTO, ConversationDTO, CalendarDTO
+from app.calendar_bot.api.dto import CalendarCreateDTO, ChatMessageDTO, ConversationDTO, CalendarDTO, MessageDTO
 
 calendar_bot_router = APIRouter(prefix="/chat", tags=["calendar_bot"])
 
@@ -18,7 +18,7 @@ async def create_conversation(  token_detail: Annotated[str, Depends(get_token_d
 @calendar_bot_router.post("/conversation/{conversation_id}/message")
 async def add_message_to_conversation(
     conversation_id: str,
-    message: str,
+    message: MessageDTO,
     token_detail: Annotated[str, Depends(get_token_detail)],
     handler: CalendarBotHandlerDep
 ) -> ChatMessageDTO:
@@ -30,12 +30,9 @@ async def add_message_to_conversation(
         message=message
     )
 
-@calendar_bot_router.get("/conversation/{conversation_id}")
-async def get_conversation(
-    conversation_id: str,
-    token_detail: Annotated[str, Depends(get_token_detail)],
-    handler: CalendarBotHandlerDep
-) -> ConversationDTO:
+@calendar_bot_router.get("/conversations/{conversation_id}")
+async def get_conversation(conversation_id: str, token_detail: Annotated[str, Depends(get_token_detail)],
+    handler: CalendarBotHandlerDep) -> ConversationDTO:
     """Get a conversation by ID"""
     conversation = await handler.get_conversation(
         user_id=token_detail.user_id,
@@ -63,7 +60,8 @@ async def create_calendar(
     """Create a new calendar"""
     return await handler.create_calendar(
         user_id=token_detail.user_id,
-        calendar_data=calendar_data
+        provider=calendar_data.provider,
+        calendar_data=calendar_data.credentials
     )
 @calendar_bot_router.get("/calendars")
 async def list_calendars(

@@ -2,7 +2,6 @@ import asyncio
 import pytz
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
-from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError
@@ -36,11 +35,6 @@ class GSuiteClient:
                 client_secret=self.client_secret,
                 scopes=google_oauth_tokens.scopes,
             )
-            if not credentials or not credentials.valid:
-                if credentials and credentials.expired and credentials.refresh_token:
-                    credentials.refresh(Request())
-                else:
-                    raise "Credentials are expired and no refresh token is available"
             return credentials
 
         except Exception as e:
@@ -67,7 +61,7 @@ class GSuiteClient:
             raise CalendarAPIError(f"Failed to fetch calendars: {str(e)}")
 
 
-    async def fetch_calendar_events(self, credentials: Credentials, calendar_id: str, time_min: Optional[datetime] = None, time_max: Optional[datetime] = None,
+    async def fetch_calendar_events(self, credentials: Credentials, calendar_id: str = 'primary', time_min: Optional[datetime] = None, time_max: Optional[datetime] = None,
     max_results: int = 100, availability_check_days: int = 7) -> list[dict]:
         try:
             service = await self.get_user_calender_service(credentials)

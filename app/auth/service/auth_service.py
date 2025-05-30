@@ -73,8 +73,11 @@ class AuthService:
             or not self._verify_password(password, user.hashed_password)
         ):
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        user_info: User| None = await self.repo.get_user_by_email(email)
+        if not user_info:
+            raise HTTPException(status_code=404, detail="User not found")
 
-        return self._create_tokens(user.id, email=email)
+        return self._create_tokens(user_info.id, email=email)
 
     async def get_user_by_id(self, user_id: str) -> User | None:
         """Get user by ID"""

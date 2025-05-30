@@ -31,11 +31,7 @@ class CalendarRepository(ICalendarRepository):
                 id=str(calendar_model.id),  #
                 user_id=str(calendar_model.user_id),  #
                 provider=CalendarProvider(calendar_model.provider),  #
-                name=str(calendar_model.name),  #
-                description=str(calendar_model.description) if calendar_model.description else None,  #
                 credentials=dict(calendar_model.credential),  #
-                created_at=cast(datetime, calendar_model.created_at),  #
-                updated_at=cast(datetime, calendar_model.updated_at)  #
             )
 
     async def create_calendar_credentials(self, user_id: str, provider: CalendarProvider,
@@ -49,25 +45,18 @@ class CalendarRepository(ICalendarRepository):
                 calendar_model = CalendarCredentialModel(  #
                     id=calendar_id,  #
                     user_id=user_id,  #
-                    provider=provider.value,  #
-                    name=calendar_data.get("name", "New Calendar"),  #
-                    description=calendar_data.get("description"),  #
+                    provider=provider,
                     credential=calendar_data,  #
                     created_at=now,  #
                     updated_at=now  #
                 )
                 session.add(calendar_model)
-                await session.refresh(calendar_model)  #
 
                 return Calendar(  #
                     id=str(calendar_model.id),  #
                     user_id=str(calendar_model.user_id),  #
                     provider=CalendarProvider(calendar_model.provider),  #
-                    name=str(calendar_model.name),  #
-                    description=str(calendar_model.description) if calendar_model.description else None,  #
                     credentials=dict(calendar_model.credential),  #
-                    created_at=cast(datetime, calendar_model.created_at),  #
-                    updated_at=cast(datetime, calendar_model.updated_at)  #
                 )
 
     async def update_calendar_credentials(self, user_id: str, calendar_id: str, calendar_data: dict) -> Calendar:
@@ -85,22 +74,13 @@ class CalendarRepository(ICalendarRepository):
                     raise ValueError("Calendar not found")  #
 
                 calendar_model.credential = dict(calendar_data)  # type: ignore #
-                calendar_model.name = str(calendar_data.get("name", calendar_model.name))  # type: ignore #
-                calendar_model.description = calendar_data.get("description",
-                                                               calendar_model.description)  # type: ignore #
                 calendar_model.updated_at = datetime.utcnow()  # type: ignore #
-
-                await session.refresh(calendar_model)  #
 
                 return Calendar(  #
                     id=str(calendar_model.id),  #
                     user_id=str(calendar_model.user_id),  #
                     provider=CalendarProvider(calendar_model.provider),  #
-                    name=str(calendar_model.name),  #
-                    description=str(calendar_model.description) if calendar_model.description else None,  #
                     credentials=dict(calendar_model.credential),  #
-                    created_at=cast(datetime, calendar_model.created_at),  #
-                    updated_at=cast(datetime, calendar_model.updated_at)  #
                 )
 
     async def list_calendars(self, user_id: str) -> list[Calendar]:
@@ -117,11 +97,7 @@ class CalendarRepository(ICalendarRepository):
                     id=str(calendar_model.id),  #
                     user_id=str(calendar_model.user_id),  #
                     provider=CalendarProvider(calendar_model.provider),  #
-                    name=str(calendar_model.name),  #
-                    description=str(calendar_model.description) if calendar_model.description else None,  #
                     credentials=dict(calendar_model.credential),  #
-                    created_at=cast(datetime, calendar_model.created_at),  #
-                    updated_at=cast(datetime, calendar_model.updated_at)  #
                 ) for calendar_model in calendar_models  #
             ]
 

@@ -9,8 +9,6 @@ class CalendarCredentialModel(Base):
     id = Column(String, primary_key=True)
     user_id = Column(String, nullable=False)
     provider = Column(String, nullable=False)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
     credential = Column(JSON, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

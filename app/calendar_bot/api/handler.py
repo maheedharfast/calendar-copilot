@@ -1,10 +1,10 @@
 from typing import Optional
 from app.calendar_bot.service.calendar_service import CalendarService
 from app.calendar_bot.service.chat_service import ChatService
-from app.calendar_bot.entities.entity import Calendar, ChatMessage, Conversation, CalendarProvider
+from app.calendar_bot.entities.entity import  CalendarProvider
 
 from pkg.log.logger import Logger
-from app.calendar_bot.api.dto import CalendarDTO, ConversationDTO, ChatMessageDTO
+from app.calendar_bot.api.dto import CalendarDTO, ConversationDTO, ChatMessageDTO,MessageDTO
 
 class CalendarBotHandler:
     def __init__(self, calendar_service: CalendarService, chat_service: ChatService, logger: Logger):
@@ -18,8 +18,7 @@ class CalendarBotHandler:
             calendar = await self.calendar_service.create_calendar(user_id, provider, calendar_data)
             return CalendarDTO(
                 id=calendar.id,
-                provider=calendar.provider.name,
-                name=calendar.name,
+                provider=calendar.provider.value,
             )
         except Exception as e:
             self.logger.error(f"Error creating calendar: {str(e)}")
@@ -33,9 +32,7 @@ class CalendarBotHandler:
                 return None
             return CalendarDTO(
                 id=calendar.id,
-
-                provider=calendar.provider.name,
-                name=calendar.name,
+                provider=calendar.provider.value,
             )
         except Exception as e:
             self.logger.error(f"Error getting calendar: {str(e)}")
@@ -58,6 +55,7 @@ class CalendarBotHandler:
     async def get_conversation(self, user_id: str, conversation_id: str) -> Optional[ConversationDTO]:
         """Get a specific conversation by ID."""
         try:
+
             conversation = await self.chat_service.get_conversation(user_id, conversation_id)
             if not conversation:
                 return None
@@ -78,10 +76,10 @@ class CalendarBotHandler:
             self.logger.error(f"Error getting conversation: {str(e)}")
             raise
 
-    async def process_message(self, user_id: str, conversation_id: str, message: str) -> ChatMessageDTO:
+    async def process_message(self, user_id: str, conversation_id: str, message: MessageDTO) -> ChatMessageDTO:
         """Process a chat message and return a response."""
         try:
-            response = await self.chat_service.process_message(user_id, conversation_id, message)
+            response = await self.chat_service.process_message(user_id, conversation_id, message.content)
             return ChatMessageDTO(
                 id=response.id,
                 conversation_id=response.conversation_id,

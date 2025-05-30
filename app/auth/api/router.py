@@ -51,7 +51,7 @@ async def logout( auth_handler: AuthHandlerDep):
 async def get_profile(token_detail: Annotated[str, Depends(get_token_detail)], auth_handler: AuthHandlerDep) -> Dict[str, Any]:
     """Get user profile information"""
     try:
-        return await auth_handler.get_user_profile()
+        return await auth_handler.get_user_profile(token_detail.user_id)
     except Exception as e:
         auth_handler.logger.error(f"Error retrieving user profile: {e!s}")
         raise HTTPException(status_code=500, detail="Internal server error")

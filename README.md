@@ -4,81 +4,96 @@ An AI-powered chatbot backend API that assists users in scheduling appointments 
 
 ## Features
 
-- **Natural Language Processing**: Understands user intents for scheduling, checking availability, and managing appointments
+- **Natural Language Processing**: Understands user intents for scheduling, checking availability, and managing appointments using Pydantic AI with OpenAI
 - **Google Calendar Integration**: Direct integration with Google Calendar API for real-time scheduling
 - **OAuth2 Authentication**: Secure authentication with Google accounts
 - **RESTful API**: Well-structured API endpoints for all calendar operations
 - **Chat Sessions**: Maintains conversation context across multiple interactions
 - **Error Handling**: Robust error handling and recovery mechanisms
 - **Type Safety**: Full Python type annotations throughout the codebase
+- **Dependency Injection**: Clean architecture with dependency injection container
+- **Configuration Management**: YAML-based configuration with OmegaConf
 
 ## Tech Stack
 
 - **Framework**: FastAPI (Python)
-- **NLP**: Gemini LLM 2.5 Flash 
+- **NLP**: Pydantic AI with OpenAI GPT models
 - **Calendar Integration**: Google Calendar API
 - **Authentication**: OAuth2 with JWT tokens
 - **Type Checking**: Pydantic for data validation
+- **Database**: SQLite with async support
+- **Dependency Management**: UV package manager
+- **Configuration**: OmegaConf for YAML configuration
+- **Dependency Injection**: dependency-injector
+- **Logging**: Loguru for structured logging
+
 ## Project Structure
 
 ```
 calendar-copilot/
+├── main_server/
+│   ├── main.py                 # FastAPI application entry point
+│   └── container.py            # Dependency injection container
 ├── app/
+│   ├── auth/
+│   │   ├── api/               # Authentication API endpoints
+│   │   ├── service/           # Authentication business logic
+│   │   ├── repository/        # Auth data access layer
+│   │   └── entities/          # Auth domain models
+│   ├── calendar_bot/
+│   │   ├── api/               # Calendar bot API endpoints
+│   │   ├── service/           # Calendar bot business logic
+│   │   ├── repository/        # Calendar data access layer
+│   │   └── entities/          # Calendar domain models
 │   ├── api/
-│   │   └── v1/
-│   │       ├── auth.py          # Authentication endpoints
-│   │       ├── calendar.py      # Calendar management endpoints
-│   │       └── chatbot.py       # Chatbot interaction endpoints
-│   ├── core/
-│   │   ├── exceptions.py        # Custom exception classes
-│   │   └── logging.py           # Logging configuration
-│   ├── models/
-│   │   ├── user.py             # User data models
-│   │   └── appointment.py      # Appointment data models
-│   ├── schemas/
-│   │   ├── auth.py             # Authentication schemas
-│   │   ├── calendar.py         # Calendar operation schemas
-│   │   └── chat.py             # Chat interaction schemas
-│   ├── services/
-│   │   ├── google_calendar.py  # Google Calendar service
-│   │   └── chat_service.py     # NLP and chat processing
-│   └── main.py                 # FastAPI application entry point
-├── config/
-│   └── settings.py             # Application configuration
-├── tests/                      # Test suite
-├── requirements.txt            # Python dependencies
-└── README.md                   # This file
+│   │   └── v1/               # API version 1 routes
+│   └── middleware/
+│       └── auth.py           # Authentication middleware
+├── pkg/
+│   ├── auth_token_client/    # JWT token utilities
+│   ├── db_util/             # Database utilities and connections
+│   ├── llm/                 # LLM integration utilities
+│   └── log/                 # Logging utilities
+├── integration_clients/
+│   └── g_suite/             # Google Workspace integrations
+├── conf/
+│   ├── config.yaml          # Application configuration
+│   └── config.py            # Configuration models
+├── data/                    # Database and data files
+├── pyproject.toml           # UV project configuration
+├── uv.lock                  # UV lock file
+├── Makefile                 # Build and run commands
+└── README.md                # This file
 ```
 
 ## API Endpoints
 
-### Authentication
-- `POST /api/v1/auth/token` - Get access token
-- `GET /api/v1/auth/profile` - Get current user info
-- `POST /api/v1/auth/logout` - Logout user
+### Authentication (`/auth`)
+- `POST /auth/register` - Register a new user with email and password
+- `POST /auth/login` - Login with email and password
+- `POST /auth/refresh` - Refresh access token
+- `POST /auth/logout` - Logout user
+- `GET /auth/profile` - Get user profile information
 
-### Calendar Operations
-- `POST /api/v1/calendar/availability` - Check calendar availability
-- `POST /api/v1/calendar/appointments` - Create new appointment
-- `GET /api/v1/calendar/appointments` - List appointments
-- `GET /api/v1/calendar/appointments/{id}` - Get specific appointment
-- `PUT /api/v1/calendar/appointments/{id}` - Update appointment
-- `DELETE /api/v1/calendar/appointments/{id}` - Delete appointment
+### Calendar Bot & Chat (`/chat`)
+**Conversation Management:**
+- `POST /chat/conversation` - Create a new conversation for the calendar bot
+- `POST /chat/conversation/{conversation_id}/message` - Add a message to a conversation
+- `GET /chat/conversations/{conversation_id}` - Get a conversation by ID
+- `GET /chat/conversations` - List all conversations for the user
 
-### Chatbot
-- `POST /api/v1/chat/message` - Send message to chatbot
-- `GET /api/v1/chat/sessions/{id}` - Get chat session history
-- `POST /api/v1/chat/sessions` - Create new chat session
-- `DELETE /api/v1/chat/sessions/{id}` - Delete chat session
-- `GET /api/v1/chat/intents` - Get supported intents
+**Calendar Management:**
+- `POST /chat/calendar` - Create a new calendar
+- `GET /chat/calendars` - List all calendars for the user
+- `GET /chat/calendar/{calendar_id}` - Get a specific calendar by ID
 
 ## Setup Instructions
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.11+
+- UV package manager
 - Google Cloud Project with Calendar API enabled
 - OpenAI API key
-- Redis (optional, for caching)
 
 ### Installation
 
@@ -88,15 +103,19 @@ git clone https://github.com/yourusername/calendar-copilot.git
 cd calendar-copilot
 ```
 
-2. Create a virtual environment:
+2. Install UV (if not already installed):
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-3. Install dependencies:
+3. Install dependencies using UV:
 ```bash
-pip install -r requirements.txt
+uv sync
+```
+
+Or using the Makefile:
+```bash
+make install
 ```
 
 4. Set up environment variables:
@@ -115,38 +134,125 @@ OPENAI_API_KEY=your-openai-api-key
 
 # Application
 SECRET_KEY=your-secret-key-here
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=30
+
+# Database
+DATABASE_URL=sqlite:///./data/calendar_copilot.db
 ```
 
 5. Run the application:
 ```bash
-uvicorn app.main_server:app --reload
+# Using UV
+uv run --env-file .env python3 -m main_server.main
+
+# Or using Makefile
+make run
 ```
 
 The API will be available at `http://localhost:8000`
+
+## Development Commands
+
+### Using UV
+```bash
+# Install dependencies
+uv sync
+
+# Run the application
+uv run --env-file .env python3 -m main_server.main
+
+# Run with development reload
+uv run --env-file .env uvicorn main_server.main:app --reload
+
+# Add a new dependency
+uv add package-name
+
+# Add a development dependency
+uv add --dev package-name
+```
+
+### Using Makefile
+```bash
+# Install dependencies
+make install
+
+# Run the application
+make run
+```
 
 ## Testing
 
 Run the test suite:
 ```bash
-pytest
+uv run pytest
 ```
 
 With coverage:
 ```bash
-pytest --cov=app tests/
+uv run pytest --cov=app tests/
+```
+
+## Configuration
+
+The application uses YAML-based configuration managed by OmegaConf. Configuration files are located in the `conf/` directory:
+
+- `config.yaml` - Main application configuration
+- `config.py` - Configuration models and validation
+
+Example configuration structure:
+```yaml
+server:
+  host: "0.0.0.0"
+  port: 8000
+  
+database:
+  url: "sqlite:///./data/calendar_copilot.db"
+  
+auth:
+  secret_key: "${SECRET_KEY}"
+  algorithm: "HS256"
+  expire_minutes: 30
+
+google:
+  client_id: "${GOOGLE_CLIENT_ID}"
+  client_secret: "${GOOGLE_CLIENT_SECRET}"
+
+openai:
+  api_key: "${OPENAI_API_KEY}"
+  model: "gpt-4"
 ```
 
 ## Usage Examples
 
-### 1. Authenticate with Google
+### 1. Register and Login
 ```bash
-# Get login URL
-curl http://localhost:8000/api/v1/auth/google/login
+# Register a new user
+curl -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "your_password"
+  }'
+
+# Login to get access token
+curl -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "your_password"
+  }'
 ```
 
-### 2. Send a chat message
+### 2. Create a conversation and send a message
 ```bash
-curl -X POST http://localhost:8000/api/v1/chat/message \
+# Create a new conversation
+curl -X POST http://localhost:8000/chat/conversation \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+
+# Send a message to the conversation
+curl -X POST http://localhost:8000/chat/conversation/{conversation_id}/message \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -154,19 +260,35 @@ curl -X POST http://localhost:8000/api/v1/chat/message \
   }'
 ```
 
-### 3. Check availability
+### 3. Manage calendars
 ```bash
-curl -X POST http://localhost:8000/api/v1/calendar/availability \
+# Create a new calendar
+curl -X POST http://localhost:8000/chat/calendar \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "start_date": "2024-01-15",
-    "end_date": "2024-01-17",
-    "duration_minutes": 30
+    "provider": "google",
+    "credentials": {
+      "access_token": "your_google_access_token"
+    }
   }'
+
+# List all calendars
+curl -X GET http://localhost:8000/chat/calendars \
+  -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ## Architecture Overview
+
+### Clean Architecture
+The project follows clean architecture principles with clear separation of concerns:
+- **API Layer**: FastAPI endpoints for external communication
+- **Service Layer**: Business logic and use cases
+- **Repository Layer**: Data access and persistence
+- **Entities**: Domain models and business rules
+
+### Dependency Injection
+Uses `dependency-injector` for managing dependencies and ensuring testability.
 
 ### Authentication Flow
 1. User initiates Google OAuth2 login
@@ -176,7 +298,7 @@ curl -X POST http://localhost:8000/api/v1/calendar/availability \
 
 ### Chat Processing Flow
 1. User sends natural language message
-2. Intent detection using OpenAI
+2. Intent detection using Pydantic AI with OpenAI
 3. Context extraction from conversation
 4. Calendar operations if needed
 5. Natural language response generation
@@ -189,38 +311,51 @@ curl -X POST http://localhost:8000/api/v1/calendar/availability \
 
 ## Design Decisions
 
-1. **FastAPI Framework**: Chosen for its modern async support, automatic API documentation, and type safety
-2. **OpenAI for NLP**: Provides superior natural language understanding compared to rule-based systems
-3. **JWT Authentication**: Stateless authentication suitable for API-first architecture
-4. **Pydantic Models**: Ensures data validation and provides clear API contracts
-5. **Service Layer Pattern**: Separates business logic from API endpoints for better testability
+1. **FastAPI Framework**: Modern async support, automatic API documentation, and type safety
+2. **UV Package Manager**: Fast, reliable Python package management
+3. **Pydantic AI**: Type-safe AI integration with better development experience
+4. **Clean Architecture**: Separation of concerns for maintainability and testability
+5. **Dependency Injection**: Loose coupling and improved testability
+6. **OmegaConf**: Flexible configuration management with environment variable support
+7. **SQLite**: Lightweight database perfect for development and small deployments
 
 ## Known Limitations
 
-1. **Session Storage**: Currently stores chat sessions in memory (not persistent)
-2. **User Management**: Simplified user management without full database integration
-3. **Calendar Providers**: Only supports Google Calendar (extensible to others)
+1. **Database**: Currently uses SQLite (can be upgraded to PostgreSQL for production)
+2. **User Management**: Simplified user management without full RBAC
+3. **Calendar Providers**: Only supports Google Calendar (extensible architecture for others)
 4. **Rate Limiting**: No built-in rate limiting (should be added for production)
-5. **Webhook Support**: No real-time calendar updates via webhooks
+5. **Caching**: No Redis caching layer (can be added via dependency injection)
 
 ## Future Enhancements
 
-1. **Database Integration**: Add PostgreSQL for persistent storage
+1. **Database Migration**: Add PostgreSQL support with Alembic migrations
 2. **Multi-Calendar Support**: Integrate with Outlook, Apple Calendar
 3. **Advanced NLP**: Fine-tune models for better scheduling understanding
 4. **Webhooks**: Real-time calendar updates
 5. **Voice Integration**: Support for voice commands
 6. **Meeting Suggestions**: AI-powered optimal meeting time suggestions
+7. **Notification System**: Email/SMS notifications for appointments
+8. **Multi-tenancy**: Support for multiple organizations
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+3. Commit your changes with type annotations
+4. Ensure tests pass: `uv run pytest`
+5. Push to the branch
+6. Create a Pull Request
+
+### Development Guidelines
+- Always use Python type definitions (as per project requirements)
+- Follow clean architecture principles
+- Write tests for new features
+- Update documentation for API changes
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+
 
